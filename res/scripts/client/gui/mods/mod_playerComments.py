@@ -7,6 +7,8 @@ from gui.Scaleform.daapi.view.dialogs import DIALOG_BUTTON_ID as BTN_ID # pyrigh
 from gui.Scaleform.daapi.view.lobby.user_cm_handlers import BaseUserCMHandler # pyright: ignore[reportMissingImports]
 
 MOD_NAME = 'Player Comments Mod'
+MOD_VERSION = '{{VERSION}}'
+
 comments_path = 'res_mods/configs/mod_playerComments.json'
 comments = {}
 

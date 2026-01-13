@@ -1,11 +1,6 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<root>
-    <id>commentary</id>
-    <version>1.0.0</version>
-    <name>Commentary Mod</name>
-    <description>Player comments mod</description>
-
-    <mount>
-        <path>scripts</path>
-    </mount>
-</root>
+<mod>
+  <name>n1ckel_.playercomments</name>
+  <description>Player comments mod</description>
+  <version>{{VERSION}}</version>
+  <author>n1ckel_</author>
+</mod>

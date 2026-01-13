@@ -41,7 +41,8 @@ if exist "%configPath%" (
 )
 
 rem ==== байткод Python 2 ====
-python -m compileall ".\build"
+C:\Python27\python.exe -m py_compile .\res\scripts\client\gui\mods\mod_playerComments.py
+move .\res\scripts\client\gui\mods\mod_playerComments.pyc .\build\res\scripts\client\gui\mods\mod_playerComments.pyc
 
 rem ==== билдим SWF ====
 if exist ".\as3\build.bat" (
