@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+    <id>commentary</id>
+    <version>1.0.0</version>
+    <name>Commentary Mod</name>
+    <description>Player comments mod</description>
+
+    <mount>
+        <path>scripts</path>
+    </mount>
+</root>

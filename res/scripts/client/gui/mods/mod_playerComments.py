@@ -1,10 +1,10 @@
-import BigWorld
+import BigWorld # pyright: ignore[reportMissingImports]
 import json
 import os
-from gui import SystemMessages, DialogsInterface
-from gui.Scaleform.daapi.view.meta.SimpleDialogMeta import SimpleDialogMeta
-from gui.Scaleform.daapi.view.dialogs import DIALOG_BUTTON_ID as BTN_ID
-from gui.Scaleform.daapi.view.lobby.user_cm_handlers import BaseUserCMHandler
+from gui import SystemMessages, DialogsInterface  # pyright: ignore[reportMissingImports]
+from gui.Scaleform.daapi.view.meta.SimpleDialogMeta import SimpleDialogMeta # pyright: ignore[reportMissingImports]
+from gui.Scaleform.daapi.view.dialogs import DIALOG_BUTTON_ID as BTN_ID # pyright: ignore[reportMissingImports]
+from gui.Scaleform.daapi.view.lobby.user_cm_handlers import BaseUserCMHandler # pyright: ignore[reportMissingImports]
 
 MOD_NAME = 'Player Comments Mod'
 comments_path = 'res_mods/configs/mod_playerComments.json'
