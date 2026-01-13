@@ -1,7 +1,8 @@
 import BigWorld # pyright: ignore[reportMissingImports]
 import json
 import os
-from gui import SystemMessages, DialogsInterface  # pyright: ignore[reportMissingImports]
+from gui import SystemMessages, DialogsInterface
+from gui.Scaleform.framework.managers.context_menu import AbstractContextMenuHandler # pyright: ignore[reportMissingImports]
 from gui.Scaleform.daapi.view.meta.SimpleDialogMeta import SimpleDialogMeta # pyright: ignore[reportMissingImports]
 from gui.Scaleform.daapi.view.dialogs import DIALOG_BUTTON_ID as BTN_ID # pyright: ignore[reportMissingImports]
 from gui.Scaleform.daapi.view.lobby.user_cm_handlers import BaseUserCMHandler # pyright: ignore[reportMissingImports]
@@ -42,10 +43,12 @@ def patched_generate_options(self, ctx=None):
         return options
     options.append(self._makeSeparator())
     comment_btn_id = 'PLAYER_COMMENT'
-    db_id_str = str(self._ctx.get('dbID', ''))
+    db_id = get_db_id_from_ctx(self._ctx)
+    db_id_str = str(db_id) if db_id is not None else ''
     label = u'Изменить комментарий' if db_id_str in comments else u'Оставить комментарий'
+    enabled = db_id is not None
     options.append(self._makeItem(comment_btn_id, label, {
-        'enabled': True,
+        'enabled': enabled,
         'iconType': 'info'
     }))
     return options
@@ -56,22 +59,40 @@ original_init = BaseUserCMHandler.__init__
 
 def patched_init(self, *args, **kwargs):
     original_init(self, *args, **kwargs)
-    if hasattr(self, '_actionHandlers'):
-        self._actionHandlers['PLAYER_COMMENT'] = 'onPlayerComment'
+    if hasattr(self, '_handlers'):
+        self._handlers['PLAYER_COMMENT'] = 'onPlayerComment'
     else:
-        print('[%s] Warning: No _actionHandlers in %s init' % (MOD_NAME, self.__class__.__name__))
+        print('[%s] Warning: No _handlers in %s init' % (MOD_NAME, self.__class__.__name__))
 
 BaseUserCMHandler.__init__ = patched_init
+
+def get_db_id_from_ctx(ctx):
+    db_id = None
+    try:
+        if hasattr(ctx, 'HasMember') and ctx.HasMember('dbID'):
+            member = ctx.GetMember('dbID')
+            if hasattr(member, 'GetNumber'):
+                db_id = member.GetNumber()
+        elif hasattr(ctx, 'get'):
+            db_id = ctx.get('dbID') or ctx.get('accountDBID') or ctx.get('databaseID')
+        elif hasattr(ctx, '__getitem__'):
+            db_id = ctx['dbID'] if 'dbID' in ctx else None
+        else:
+            db_id = getattr(ctx, 'dbID', None)
+    except Exception as e:
+        print('[%s] Error accessing dbID from ctx: %s' % (MOD_NAME, e))
+    print('[%s] Extracted db_id: %s (ctx type: %s)' % (MOD_NAME, db_id, type(ctx)))
+    return db_id
 
 def on_player_comment(self):
     if not hasattr(self, '_ctx'):
         print('[%s] Skipping on_player_comment for %s - no _ctx' % (MOD_NAME, self.__class__.__name__))
         return
-    print('[%s] Context: %r (class: %s)' % (MOD_NAME, self._ctx, self.__class__.__name__))
-    db_id = self._ctx.get('dbID') or self._ctx.get('accountDBID') or self._ctx.get('databaseID')
-    if not db_id:
+    print('[%s] Context type: %s (class: %s)' % (MOD_NAME, type(self._ctx), self.__class__.__name__))
+    db_id = get_db_id_from_ctx(self._ctx)
+    if db_id is None:
         SystemMessages.pushMessage('Ошибка: ID игрока не найден', SystemMessages.SM_TYPE.ErrorHeader)
-        print('[%s] No dbID in ctx: %r' % (MOD_NAME, self._ctx))
+        print('[%s] No dbID in ctx' % MOD_NAME)
         return
     db_id_str = str(db_id)
     initial_value = comments.get(db_id_str, u'')
