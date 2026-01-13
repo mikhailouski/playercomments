@@ -2,12 +2,9 @@ import BigWorld
 import json
 import os
 from gui import SystemMessages, DialogsInterface
-from gui.Scaleform.framework.managers.context_menu import AbstractContextMenuHandler
 from gui.Scaleform.daapi.view.meta.SimpleDialogMeta import SimpleDialogMeta
 from gui.Scaleform.daapi.view.dialogs import DIALOG_BUTTON_ID as BTN_ID
 from gui.Scaleform.daapi.view.lobby.user_cm_handlers import BaseUserCMHandler
-from helpers import dependency
-from skeletons.gui.app_loader import IAppLoader
 
 MOD_NAME = 'Player Comments Mod'
 comments_path = 'res_mods/configs/mod_playerComments.json'
@@ -38,9 +35,13 @@ original_generate_options = BaseUserCMHandler._generateOptions
 
 def patched_generate_options(self, ctx=None):
     options = original_generate_options(self, ctx)
+    if not hasattr(self, '_ctx'):
+        print('[%s] Skipping patch for %s - no _ctx' % (MOD_NAME, self.__class__.__name__))
+        return options
     options.append(self._makeSeparator())
     comment_btn_id = 'PLAYER_COMMENT'
-    label = u'Изменить комментарий' if str(self._ctx.get('dbID', '')) in comments else u'Оставить комментарий'
+    db_id_str = str(self._ctx.get('dbID', ''))
+    label = u'Изменить комментарий' if db_id_str in comments else u'Оставить комментарий'
     options.append(self._makeItem(comment_btn_id, label, {
         'enabled': True,
         'iconType': 'info'
@@ -56,13 +57,16 @@ def patched_init(self, *args, **kwargs):
     if hasattr(self, '_actionHandlers'):
         self._actionHandlers['PLAYER_COMMENT'] = 'onPlayerComment'
     else:
-        print('[%s] Warning: No _actionHandlers in handler init' % MOD_NAME)
+        print('[%s] Warning: No _actionHandlers in %s init' % (MOD_NAME, self.__class__.__name__))
 
 BaseUserCMHandler.__init__ = patched_init
 
 def on_player_comment(self):
-    print('[%s] Context: %r' % (MOD_NAME, self._ctx))
-    db_id = self._ctx.get('dbID') or self._ctx.get('accountDBID')
+    if not hasattr(self, '_ctx'):
+        print('[%s] Skipping on_player_comment for %s - no _ctx' % (MOD_NAME, self.__class__.__name__))
+        return
+    print('[%s] Context: %r (class: %s)' % (MOD_NAME, self._ctx, self.__class__.__name__))
+    db_id = self._ctx.get('dbID') or self._ctx.get('accountDBID') or self._ctx.get('databaseID')
     if not db_id:
         SystemMessages.pushMessage('Ошибка: ID игрока не найден', SystemMessages.SM_TYPE.ErrorHeader)
         print('[%s] No dbID in ctx: %r' % (MOD_NAME, self._ctx))
